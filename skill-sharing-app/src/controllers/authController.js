@@ -25,7 +25,8 @@ exports.register = async (req, res) => {
         });
 
         await newUser.save();
-        res.status(201).json({ message: 'User registered successfully' });
+        const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        res.status(201).json({ token, user: newUser });
     } catch (error) {
         res.status(500).json({ message: 'Error registering user', error: error.message });
     }
@@ -50,5 +51,16 @@ exports.login = async (req, res) => {
         res.status(200).json({ token, user });
     } catch (error) {
         res.status(500).json({ message: 'Error logging in', error: error.message });
+    }
+};
+
+// Current user from token
+exports.me = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password');
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        res.status(200).json({ user });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching current user', error: error.message });
     }
 };

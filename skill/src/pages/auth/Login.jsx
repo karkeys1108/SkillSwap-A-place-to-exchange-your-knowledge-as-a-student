@@ -131,7 +131,7 @@ const Login = () => {
               align="center" 
               sx={{ mb: 4 }}
             >
-              Sign in to continue to SkillShare Hub
+              Sign in to continue to SkillSwap
             </Typography>
             
             <Box sx={{ mb: 4 }}>

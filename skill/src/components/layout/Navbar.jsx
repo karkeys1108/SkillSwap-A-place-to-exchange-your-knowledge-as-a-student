@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { 
   AppBar, 
@@ -25,24 +25,16 @@ import {
   ExitToApp as LogoutIcon,
   Settings as SettingsIcon,
 } from '@mui/icons-material';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Navbar = ({ colorMode, mode }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout, isAuthenticated } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [user, setUser] = useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
-  
-  // Check if user is logged in (in a real app, this would come from your auth context)
-  useEffect(() => {
-    // Simulate checking if user is logged in
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
-  }, [location]);
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
@@ -65,11 +57,8 @@ const Navbar = ({ colorMode, mode }) => {
   };
 
   const handleLogout = () => {
-    // Handle logout logic
-    localStorage.removeItem('user');
-    setUser(null);
+    logout();
     handleMenuClose();
-    navigate('/login');
   };
 
   const menuId = 'primary-search-account-menu';
@@ -162,7 +151,7 @@ const Navbar = ({ colorMode, mode }) => {
               },
             }}
           >
-            SkillShare Hub
+            SkillSwap
           </Typography>
 
           {/* Mobile menu button */}
@@ -231,7 +220,7 @@ const Navbar = ({ colorMode, mode }) => {
               </IconButton>
             </Tooltip>
 
-            {user ? (
+            {isAuthenticated ? (
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <IconButton
                   size="large"

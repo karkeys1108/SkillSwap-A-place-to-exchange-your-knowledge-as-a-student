@@ -159,7 +159,7 @@ const Home = () => {
                       }
                     }}
                   >
-                    SkillShare Hub
+                    SkillSwap
                   </Box>
                 </Typography>
                 <Typography 
@@ -241,7 +241,7 @@ const Home = () => {
               gutterBottom
               sx={{ fontWeight: 700 }}
             >
-              Why Choose SkillShare Hub?
+              Why Choose SkillSwap?
             </Typography>
             <Typography 
               variant="h6" 

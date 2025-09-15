@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
       try {
         // Validate token with backend
         const response = await authApi.getMe();
-        setUser(response.data.data);
+        setUser(response.data.user);
       } catch (err) {
         console.error('Token validation failed:', err);
         // Clear invalid token and user data

@@ -1,46 +1,50 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Grid, Typography, Box, TextField, InputAdornment } from '@mui/material';
+import { Container, Grid, Typography, Box, TextField, InputAdornment, Alert } from '@mui/material';
 import { Search as SearchIcon } from '@mui/icons-material';
 import SkillCard from '../components/skills/SkillCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import useApi from '../hooks/useApi';
+import { skillsApi } from '../services/api';
 
 const BrowseSkills = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState({
-    category: '',
-    level: '',
-    sortBy: 'recent',
-  });
+  const [skills, setSkills] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Fetch skills from API
-  const { data: skills, loading, error } = useApi('/api/skills');
+  useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        setLoading(true);
+        const response = await skillsApi.list();
+        setSkills(response.data);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to load skills');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSkills();
+  }, []);
   
-  // Filter and sort skills based on search and filters
+  // Filter and sort skills based on search
   const filteredSkills = skills
     ?.filter(skill => 
-      skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      skill.description.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .filter(skill => 
-      !filters.category || skill.category === filters.category
-    )
-    .filter(skill => 
-      !filters.level || skill.level === filters.level
+      skill.skillName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (skill.description && skill.description.toLowerCase().includes(searchTerm.toLowerCase()))
     )
     .sort((a, b) => {
-      if (filters.sortBy === 'recent') {
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      } else if (filters.sortBy === 'popular') {
-        return b.views - a.views;
-      } else if (filters.sortBy === 'rating') {
-        return b.rating - a.rating;
-      }
-      return 0;
+      // Sort by most recent first
+      return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
   if (loading) return <LoadingSpinner />;
-  if (error) return <div>Error loading skills: {error.message}</div>;
+  if (error) return (
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Alert severity="error">{error}</Alert>
+    </Container>
+  );
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -53,8 +57,8 @@ const BrowseSkills = () => {
         </Typography>
       </Box>
 
-      {/* Search and Filter Bar */}
-      <Box sx={{ mb: 4, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+      {/* Search Bar */}
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
         <TextField
           fullWidth
           variant="outlined"
@@ -70,59 +74,13 @@ const BrowseSkills = () => {
           }}
           sx={{ maxWidth: 500 }}
         />
-        
-        <TextField
-          select
-          label="Category"
-          value={filters.category}
-          onChange={(e) => setFilters({...filters, category: e.target.value})}
-          SelectProps={{ native: true }}
-          variant="outlined"
-          sx={{ minWidth: 180 }}
-        >
-          <option value="">All Categories</option>
-          <option value="programming">Programming</option>
-          <option value="design">Design</option>
-          <option value="marketing">Marketing</option>
-          <option value="business">Business</option>
-          <option value="languages">Languages</option>
-        </TextField>
-        
-        <TextField
-          select
-          label="Level"
-          value={filters.level}
-          onChange={(e) => setFilters({...filters, level: e.target.value})}
-          SelectProps={{ native: true }}
-          variant="outlined"
-          sx={{ minWidth: 150 }}
-        >
-          <option value="">All Levels</option>
-          <option value="beginner">Beginner</option>
-          <option value="intermediate">Intermediate</option>
-          <option value="advanced">Advanced</option>
-        </TextField>
-        
-        <TextField
-          select
-          label="Sort By"
-          value={filters.sortBy}
-          onChange={(e) => setFilters({...filters, sortBy: e.target.value})}
-          SelectProps={{ native: true }}
-          variant="outlined"
-          sx={{ minWidth: 150 }}
-        >
-          <option value="recent">Most Recent</option>
-          <option value="popular">Most Popular</option>
-          <option value="rating">Highest Rated</option>
-        </TextField>
       </Box>
 
       {/* Skills Grid */}
       {filteredSkills?.length > 0 ? (
         <Grid container spacing={3}>
           {filteredSkills.map((skill) => (
-            <Grid item key={skill.id} xs={12} sm={6} md={4} lg={3}>
+            <Grid item key={skill._id} xs={12} sm={6} md={4} lg={3}>
               <SkillCard skill={skill} />
             </Grid>
           ))}
@@ -130,7 +88,7 @@ const BrowseSkills = () => {
       ) : (
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <Typography variant="h6" color="text.secondary">
-            No skills found matching your criteria
+            {searchTerm ? 'No skills found matching your search' : 'No skills available yet'}
           </Typography>
         </Box>
       )}

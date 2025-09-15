@@ -6,6 +6,7 @@ import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { motion } from 'framer-motion';
 import { sessionsApi, usersApi } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   height: '100%',
@@ -39,13 +40,11 @@ const TabPanel = (props) => {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [tabValue, setTabValue] = useState(0);
   const [upcomingSessions, setUpcomingSessions] = useState([]);
-  
   const [recordedSessions, setRecordedSessions] = useState([]);
-  
   const [teachingSessions, setTeachingSessions] = useState([]);
-  
   const [notifications, setNotifications] = useState([
     { id: 1, message: 'New session on Data Science available', time: '2 hours ago', read: false },
     { id: 2, message: 'Your session on React Hooks is tomorrow', time: '1 day ago', read: true },
@@ -90,7 +89,7 @@ const Dashboard = () => {
     <Container maxWidth="xl" sx={{ mt: 4, mb: 8 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h4" component="h1" fontWeight="bold">
-          Welcome back, User!
+          Welcome back, {user?.name || 'User'}!
         </Typography>
         <Button variant="contained" color="primary" size="large" onClick={() => navigate('/sessions/create')}>
           Schedule a Session
